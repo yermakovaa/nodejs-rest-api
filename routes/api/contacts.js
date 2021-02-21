@@ -3,7 +3,7 @@ const router = express.Router();
 const Contacts = require('../../model/index');
 const validate = require('../../services/validation');
 
-router.get('/', async (req, res, next) => {
+router.get('/', async (_req, res, next) => {
   try {
     const contacts = await Contacts.listContacts();
     return res.json({
@@ -85,6 +85,13 @@ router.delete('/:contactId', async (req, res, next) => {
 
 router.patch('/:contactId', validate.updateContact, async (req, res, next) => {
   try {
+    if (Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        status: 'Error',
+        code: 400,
+        message: 'Bad request',
+      });
+    }
     const contact = await Contacts.updateContact(
       req.params.contactId,
       req.body,
@@ -102,7 +109,7 @@ router.patch('/:contactId', validate.updateContact, async (req, res, next) => {
       return res.status(404).json({
         status: 'Error',
         code: 404,
-        data: 'Not Found',
+        message: 'Not Found',
       });
     }
   } catch (e) {
