@@ -27,6 +27,11 @@ const contactSchema = new Schema(
         message: props => `${props.value} is not a valid phone number!`,
       },
     },
+    subscription: {
+      type: String,
+      default: 'free',
+      enum: ['free', 'pro', 'premium'],
+    },
     owner: {
       type: SchemaTypes.ObjectId,
       ref: 'user',
