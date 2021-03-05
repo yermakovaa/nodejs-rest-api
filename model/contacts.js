@@ -4,22 +4,22 @@ const listContacts = async (
   userId,
   { sortBy, sortByDesc, sub, page = '1', limit = '20' },
 ) => {
-  const data = await Contact.paginate(
-    { owner: userId },
-    {
-      page,
-      limit,
-      sort: {
-        ...(sortBy ? { [`${sortBy}`]: 1 } : {}),
-        ...(sortByDesc ? { [`${sortByDesc}`]: -1 } : {}),
-      },
-      // select: sub ? '' : '',
-      populate: {
-        path: 'owner',
-        select: 'email subscription -_id',
-      },
+  const options = { owner: userId };
+  if (sub) {
+    options.subscription = { $all: [sub] };
+  }
+  const data = await Contact.paginate(options, {
+    page,
+    limit,
+    sort: {
+      ...(sortBy ? { [`${sortBy}`]: 1 } : {}),
+      ...(sortByDesc ? { [`${sortByDesc}`]: -1 } : {}),
     },
-  );
+    populate: {
+      path: 'owner',
+      select: 'email subscription -_id',
+    },
+  });
   const { docs: contacts, totalDocs: total } = data;
   return { total: total.toString(), page, limit, contacts };
 };
