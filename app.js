@@ -2,13 +2,18 @@ const express = require('express');
 const logger = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('path');
 const { HttpCode } = require('./service/constants');
 
 const contactsRouter = require('./routes/api/contacts');
 const usersRouter = require('./routes/api/users');
 const { createAccountLimiter } = require('./service/rate-limit');
+require('dotenv').config();
 
 const app = express();
+
+const AVATAR_URL = process.env.AVATAR_URL;
+app.use(express.static(path.join(__dirname, AVATAR_URL)));
 
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short';
 
