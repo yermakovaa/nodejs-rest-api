@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Users = require('../model/users');
-const fs = require('fs').promises;
+const fs = require('fs/promises');
 const path = require('path');
 const Jimp = require('jimp');
 const { HttpCode } = require('../service/constants');
@@ -81,14 +81,14 @@ const login = async (req, res, next) => {
 };
 
 const logout = async (req, res, _next) => {
-  const id = req.user.id;
+  const id = String(req.user._id);
   await Users.updateToken(id, null);
   return res.status(HttpCode.NO_CONTENT).json({});
 };
 
 const currentUser = async (req, res, next) => {
-  const id = req.user.id;
   try {
+    const id = String(req.user._id);
     const user = await Users.findById(id);
     return res.status(HttpCode.OK).json({
       status: 'success',
@@ -107,8 +107,8 @@ const currentUser = async (req, res, next) => {
 };
 
 const updateSub = async (req, res, next) => {
-  const id = req.user.id;
   try {
+    const id = String(req.user._id);
     await Users.updateSubUser(id, req.body.subscription);
     const user = await Users.findById(id);
     return res.json({
@@ -134,7 +134,7 @@ const updateSub = async (req, res, next) => {
 };
 
 const saveAvatarToStatic = async req => {
-  const id = req.user.id;
+  const id = String(req.user._id);
   const AVATAR_URL = process.env.AVATAR_URL;
   const pathFile = req.file.path;
   const newNameAvatar = `${Date.now()}-${req.file.originalname}`;
@@ -156,7 +156,7 @@ const saveAvatarToStatic = async req => {
 
 const avatars = async (req, res, next) => {
   try {
-    const id = req.user.id;
+    const id = String(req.user._id);
     const avatarUrl = await saveAvatarToStatic(req);
     await Users.updateAvatar(id, avatarUrl);
     return res.json({

@@ -7,7 +7,10 @@
     "start:dev": "cross-env NODE_ENV=development nodemon ./bin/server.js",
     "lint": "eslint **/*.{js,json}",
     "lint:fix": "eslint --fix **/*.{js,json}",
-    "dev:debug": "node --inspect ./bin/server.js"
+    "dev:debug": "node --inspect ./bin/server.js",
+    "test": "cross-env NODE_ENV=test jest --no-cache --verbose",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watchAll"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
