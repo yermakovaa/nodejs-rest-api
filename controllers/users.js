@@ -5,6 +5,8 @@ const path = require('path');
 const Jimp = require('jimp');
 const { HttpCode } = require('../service/constants');
 const createFolderIsExist = require('../service/create-dir');
+const { nanoid } = require('nanoid');
+const EmailService = require('../service/email');
 require('dotenv').config();
 
 const SECRET_KEY = process.env.JWT_SECRET;
@@ -19,7 +21,10 @@ const register = async (req, res, next) => {
         message: 'Email in use',
       });
     }
-    const newUser = await Users.create(req.body);
+    const verificationToken = nanoid();
+    const emailService = new EmailService(process.env.NODE_ENV);
+    await emailService.sendEmail(verificationToken, email);
+    const newUser = await Users.create({ ...req.body, verificationToken });
     return res.status(HttpCode.CREATED).json({
       status: 'success',
       code: HttpCode.CREATED,
@@ -47,7 +52,7 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await Users.findByEmail(email);
     const isValidPassword = await user?.validPassword(password);
-    if (!user || !isValidPassword) {
+    if (!user || !isValidPassword || user.verificationToken) {
       return next({
         status: HttpCode.UNAUTHORIZED,
         message: 'Email or password is wrong',
@@ -171,4 +176,33 @@ const avatars = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, logout, currentUser, updateSub, avatars };
+const verify = async (req, res, next) => {
+  try {
+    const user = await Users.findByVerificationToken(
+      req.params.verificationToken,
+    );
+    if (!user) {
+      return next({
+        status: HttpCode.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+    await Users.updateVerificationToken(user.id, null);
+    return res.json({
+      status: 'success',
+      code: HttpCode.OK,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  logout,
+  currentUser,
+  updateSub,
+  avatars,
+  verify,
+};
